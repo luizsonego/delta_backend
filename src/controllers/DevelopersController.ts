@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { getRepository } from 'typeorm'
+import { Any, getRepository } from 'typeorm'
 import * as Yup from 'yup'
 
 import Developers from '../entity/Developers'
@@ -49,5 +49,32 @@ export default {
     const developer = await developerRepository.findOneOrFail(id)
 
     return response.json(DevelopersView.render(developer))
+  },
+
+  async update (request: Request, response: Response) {
+    const { id } = request.params
+    const { name, gender, age, hobby, birth } = request.body
+
+    const developersRepository = getRepository(Developers)
+
+    try {
+      await developersRepository.update({ id: parseInt(id) }, { name, gender, age, hobby, birth })
+      throw response.status(200).json('alterado com sucesso')
+    } catch (error) {
+      throw response.status(400).json(error)
+    }
+  },
+
+  async delete (request: Request, response: Response) {
+    const { id } = request.params
+
+    const developersRepository = getRepository(Developers)
+
+    try {
+      await developersRepository.delete(id)
+      throw response.status(200).json('deletado')
+    } catch (error) {
+      throw response.status(400).json(error)
+    }
   }
 }
