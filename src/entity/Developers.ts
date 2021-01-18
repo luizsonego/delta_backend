@@ -18,5 +18,5 @@ export default class Developers {
   hobby: string;
 
   @Column()
-  birth: Date;
+  birth: string;
 }

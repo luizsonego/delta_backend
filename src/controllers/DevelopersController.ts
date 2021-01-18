@@ -1,10 +1,9 @@
-import { query, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import * as Yup from 'yup'
 
 import Developers from '../entity/Developers'
 import DevelopersView from '../views/developers_view'
-
 
 export default {
   async create (request: Request, response: Response) {
@@ -24,9 +23,9 @@ export default {
       const schema = Yup.object().shape({
         name: Yup.string().required(),
         gender: Yup.string().required(),
-        age: Yup.number(),
+        age: Yup.number().required(),
         hobby: Yup.string().required(),
-        birth: Yup.date().required()
+        birth: Yup.string().required()
       })
 
       await schema.validate(data, {
@@ -44,22 +43,42 @@ export default {
 
   async index (request: Request, response: Response) {
     const developerRepository = getRepository(Developers)
+    let { perPage, page, ...params } = request.query
+    let realPage: number
+    let realTake: number
 
-    const page : any = request.query.page || 1
-    const limit : any = request.query.limit || 10
+    if (perPage) realTake = +perPage
+    else {
+      perPage = '10'
+      realTake = 10
+    }
 
-    // const search = { where: { ...request.query } } //// Esta buscando item especifico, verificar para buscar com Like
-    // const where = search || ''
+    if (page) realPage = +page === 1 ? 0 : (+page - 1) * realTake
+    else {
+      realPage = 0
+      page = '1'
+    }
 
+    const findOptions = {
+      take: realTake,
+      skip: realPage,
+      where: { ...params }
+    }
+    if (!params) delete findOptions.where
 
-    const startIndex = (page - 1) * limit
-    const endIndex = page * limit
+    const getQuery = () => Object.keys(params).map((key:string) => `${key}=${params[key]}`).join('&')
+    const queryParams = getQuery().length === 0 ? '' : `&${getQuery()}`
+    const developers = await developerRepository.find(findOptions)
 
-    const developers = await developerRepository.find()
-
-    const result = developers.slice(startIndex, endIndex)
-
-    return response.json(DevelopersView.renderMany(result))
+    return response.json(
+      {
+        data: DevelopersView.renderMany(developers),
+        perPage: realTake,
+        page: +page || 1,
+        next: `developers?perPage=${realTake}&page=${+page + 1}${queryParams}`,
+        prev: `developers?perPage=${realTake}&page=${+page - 1}${queryParams}`
+      }
+    )
   },
 
   async show (request: Request, response: Response) {
@@ -68,27 +87,24 @@ export default {
 
     const developer = await developerRepository.findOneOrFail(id)
 
-    return response.json(DevelopersView.render(developer))
+    return response.status(200).json(DevelopersView.render(developer))
   },
 
   async update (request: Request, response: Response) {
-    try {
-      const { id } = request.params
-      const { name, gender, age, hobby, birth } = request.body
+    const { id } = request.params
+    const { name, gender, age, hobby, birth } = request.body
 
+    try {
       const developersRepository = getRepository(Developers)
 
-      const developer = await developersRepository.update(
+      await developersRepository.update(
         { id: parseInt(id) },
         { name, gender, age, hobby, birth }
-      )
-      if (developer.affected === 1) {
-        const developerUpdated = await developersRepository.findOne(id)
-        return response.status(200).json(developerUpdated)
-      }
-      return response.status(404).json({message: 'Developer not found'})
+      ).then(resp => {
+        return response.status(200).json({ name, gender, age, hobby, birth })
+      })
     } catch (error) {
-      return response.status(400).json(error)
+      return response.status(400).json({ message: error })
     }
   },
 
@@ -99,9 +115,9 @@ export default {
 
     try {
       await developersRepository.delete(id)
-      return response.status(200).json('deletado')
+      return response.status(200).json({ message: 'deletado' })
     } catch (error) {
-      return response.status(400).json(error)
+      return response.status(400).json({ message: error })
     }
   }
 }
