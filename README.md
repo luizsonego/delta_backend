@@ -1,7 +1,22 @@
-# Awesome Project Build with TypeORM
+# Backend Teste Ligue
 
-Steps to run this project:
 
-1. Run `npm i` command
-2. Setup database settings inside `ormconfig.json` file
-3. Run `npm start` command
+install dependencies
+```
+$ yarn install 
+```
+- important - run sqlite version 5.0.0, recent versions are broken
+
+create db (based on sqlite)
+```
+yarn typeorm migration:run
+```
+
+start server
+```
+$ yarn dev
+```
+
+within the application has file of rest routes.
+
+api.http
