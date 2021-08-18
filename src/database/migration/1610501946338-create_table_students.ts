@@ -4,7 +4,7 @@ export class createTableDevelopers1610501946338 implements MigrationInterface {
   public async up (queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'developers',
+        name: 'students',
         columns: [
           {
             name: 'id',
@@ -27,7 +27,7 @@ export class createTableDevelopers1610501946338 implements MigrationInterface {
             type: 'integer'
           },
           {
-            name: 'hobby',
+            name: 'class_',
             type: 'varchar'
           },
           {

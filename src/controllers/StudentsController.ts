@@ -2,21 +2,21 @@ import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import * as Yup from 'yup'
 
-import Developers from '../entity/Developers'
-import DevelopersView from '../views/developers_view'
+import Students from '../entity/Students'
+import StudentsView from '../views/students_view'
 
 export default {
   async create (request: Request, response: Response) {
     try {
-      const { name, gender, age, hobby, birth } = request.body
+      const { name, gender, age, class_, birth } = request.body
 
-      const developersRepository = getRepository(Developers)
+      const studentsRepository = getRepository(Students)
 
       const data = {
         name,
         gender,
         age,
-        hobby,
+        class_,
         birth
       }
 
@@ -24,7 +24,7 @@ export default {
         name: Yup.string().required(),
         gender: Yup.string().required(),
         age: Yup.number().required(),
-        hobby: Yup.string().required(),
+        class_: Yup.string().required(),
         birth: Yup.string().required()
       })
 
@@ -32,9 +32,9 @@ export default {
         abortEarly: false
       })
 
-      const developer = developersRepository.create(data)
+      const developer = studentsRepository.create(data)
 
-      await developersRepository.save(developer)
+      await studentsRepository.save(developer)
       return response.status(201).json({ developer })
     } catch (error) {
       return response.status(400).json(error)
@@ -42,7 +42,7 @@ export default {
   },
 
   async index (request: Request, response: Response) {
-    const developerRepository = getRepository(Developers)
+    const developerRepository = getRepository(Students)
     let { perPage, page, ...params } = request.query
     let realPage: number
     let realTake: number
@@ -68,40 +68,40 @@ export default {
 
     const getQuery = () => Object.keys(params).map((key:string) => `${key}=${params[key]}`).join('&')
     const queryParams = getQuery().length === 0 ? '' : `&${getQuery()}`
-    const developers = await developerRepository.find(findOptions)
+    const students = await developerRepository.find(findOptions)
 
     return response.json(
       {
-        data: DevelopersView.renderMany(developers),
+        data: StudentsView.renderMany(students),
         perPage: realTake,
         page: +page || 1,
-        next: `developers?perPage=${realTake}&page=${+page + 1}${queryParams}`,
-        prev: `developers?perPage=${realTake}&page=${+page - 1}${queryParams}`
+        next: `students?perPage=${realTake}&page=${+page + 1}${queryParams}`,
+        prev: `students?perPage=${realTake}&page=${+page - 1}${queryParams}`
       }
     )
   },
 
   async show (request: Request, response: Response) {
     const { id } = request.params
-    const developerRepository = getRepository(Developers)
+    const developerRepository = getRepository(Students)
 
     const developer = await developerRepository.findOneOrFail(id)
 
-    return response.status(200).json(DevelopersView.render(developer))
+    return response.status(200).json(StudentsView.render(developer))
   },
 
   async update (request: Request, response: Response) {
     const { id } = request.params
-    const { name, gender, age, hobby, birth } = request.body
+    const { name, gender, age, class_, birth } = request.body
 
     try {
-      const developersRepository = getRepository(Developers)
+      const studentsRepository = getRepository(Students)
 
-      await developersRepository.update(
+      await studentsRepository.update(
         { id: parseInt(id) },
-        { name, gender, age, hobby, birth }
+        { name, gender, age, class_, birth }
       ).then(resp => {
-        return response.status(200).json({ name, gender, age, hobby, birth })
+        return response.status(200).json({ name, gender, age, class_, birth })
       })
     } catch (error) {
       return response.status(400).json({ message: error })
@@ -111,10 +111,10 @@ export default {
   async destroy (request: Request, response: Response) {
     const { id } = request.params
 
-    const developersRepository = getRepository(Developers)
+    const studentsRepository = getRepository(Students)
 
     try {
-      await developersRepository.delete(id)
+      await studentsRepository.delete(id)
       return response.status(200).json({ message: 'deletado' })
     } catch (error) {
       return response.status(400).json({ message: error })

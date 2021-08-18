@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import DevelopersController from './controllers/DevelopersController'
+import StudentsController from './controllers/StudentsController'
 
 const routes = Router()
 
-routes.get('/developers', DevelopersController.index)
-routes.get('/developers/:id', DevelopersController.show)
-routes.put('/developers/:id', DevelopersController.update)
-routes.delete('/developers/:id', DevelopersController.destroy)
-routes.post('/developers', DevelopersController.create)
+routes.get('/aluno', StudentsController.index)
+routes.get('/aluno/:id', StudentsController.show)
+routes.put('/aluno/:id', StudentsController.update)
+routes.delete('/aluno/:id', StudentsController.destroy)
+routes.post('/aluno', StudentsController.create)
 
 export default routes

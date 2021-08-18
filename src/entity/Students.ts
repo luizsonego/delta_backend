@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
-@Entity('Developers')
+@Entity('Students')
 export default class Developers {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -15,7 +15,7 @@ export default class Developers {
   age: number;
 
   @Column()
-  hobby: string;
+  class_: string;
 
   @Column()
   birth: Date;
